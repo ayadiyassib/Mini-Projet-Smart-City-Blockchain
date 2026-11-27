@@ -1,57 +1,125 @@
-# Sample Hardhat 3 Project (`mocha` and `ethers`)
+# 🏙️ Civitas : Plateforme Décentralisée de Gestion des Services Urbains (Smart City & Blockchain)
 
-This project showcases a Hardhat 3 project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+Application décentralisée (DApp) complète permettant aux citoyens de signaler des dégradations urbaines et aux services municipaux d'assurer leur prise en charge avec un historique d'intervention infalsifiable sur la blockchain Ethereum.
 
-To learn more about Hardhat 3, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3](https://hardhat.org/hardhat3-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+---
 
-## Project Overview
+## 📌 Architecture du Projet
 
-This example project includes:
+```text
+MiniProjet_SmartCity/
+├── contracts/
+│   └── UrbanIssueRegistry.sol      # Smart Contract (Cycle de vie, Historique, Traçabilité, Batch)
+├── test/
+│   └── UrbanIssueRegistry.test.ts  # Tests unitaires automatisés (6/6 tests réussis)
+├── scripts/
+│   └── deploy.ts                   # Script de déploiement Hardhat 3
+├── frontend/                       # DApp Web3 React + Vite (Design Civitas SaaS & SVG Icons)
+│   ├── src/
+│   │   ├── contractConfig.js       # Configuration (Adresse & ABI du registre)
+│   │   ├── App.jsx                 # Application (Espace Citoyen, Mairie & Traçabilité)
+│   │   └── App.css                 # Interface utilisateur moderne
+├── urban_issues.xlsx               # Fichier Excel modèle de signalements (9 colonnes)
+├── hardhat.config.ts               # Configuration Hardhat (viaIR activé)
+└── README.md
+```
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+---
 
-## Usage
+## ⚙️ Prérequis et Installation
 
-### Running Tests
+- **Node.js** : version 22.x ou supérieure (`nvm use 22`)
+- **MetaMask** : extension connectée au réseau local Hardhat (`http://127.0.0.1:8545`, Chain ID `31337`).
 
-To run all the tests in the project, execute the following command:
+### 1. Installation des dépendances
 
-```shell
+```bash
+# Dépendances Hardhat (à la racine de MiniProjet_SmartCity)
+npm install
+
+# Dépendances Frontend (React + Vite + SheetJS + ethers)
+cd frontend
+npm install
+cd ..
+```
+
+---
+
+## 🧪 Tests Unitaires Automatisés
+
+Le Smart Contract valide l'intégralité du cycle de vie des incidents (`Reported` ➔ `Assigned` ➔ `InProgress` ➔ `Resolved` ➔ `Closed`), la traçabilité de chaque action, la règle anti-doublon et l'enregistrement groupé.
+
+Exécuter la suite de tests :
+
+```bash
 npx hardhat test
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
+**Résultat :**
+```text
+  UrbanIssueRegistry - Tests Unitaires & Cycle de Vie Smart City
+    ✔ 1. Un citoyen peut déclarer un signalement (statut initial = Reported)
+    ✔ 2. La municipalité peut affecter une équipe (statut passe à Assigned)
+    ✔ 3. Sécurité : Un utilisateur non autorisé ne peut pas affecter ni modifier le statut
+    ✔ 4. Traçabilité : Enregistre chronologiquement chaque étape du traitement
+    ✔ 5. Sécurité : Rejette un signalement avec un code d'incident déjà existant
+    ✔ 6. L'importation groupée (Batch) enregistre correctement plusieurs pannes
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
+  6 passing (400ms)
 ```
 
-### Make a deployment to Sepolia
+---
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+## 🚀 Déploiement du Smart Contract
 
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+### Étape 1 : Démarrer la Blockchain locale (Terminal 1)
+```bash
+npx hardhat node
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+### Étape 2 : Déployer le contrat (Terminal 2)
+```bash
+npx hardhat run scripts/deploy.ts --network localhost
 ```
+- **Adresse déployée :** `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+- **Autorité Municipale (Admin) :** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
 
-After setting the variable, you can run the deployment with the Sepolia network:
+---
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
+## 💻 Démarrage de la Plateforme Civitas
+
+Dans un nouveau terminal :
+```bash
+cd frontend
+npm run dev
 ```
+Accès : `http://localhost:5173/`.
+
+---
+
+## 📸 Démonstration en Images (Cycle de Vie Complet)
+
+### 1. Espace Citoyen : Déclaration d'un Incident
+Le citoyen déclare une panne d'éclairage public (`CITY-2026-260`) enregistrée on-chain :
+
+![Déclaration Citoyenne](../images/image19.png)
+
+### 2. Services Municipaux : Affectation d'Équipe
+La mairie assigne l'équipe technique `UrbanTeam01` au signalement #1 :
+
+![Affectation Équipe](../images/image20.png)
+
+### 3. Services Municipaux : Mise à Jour du Statut
+Changement d'état vers `InProgress` avec consignation du rapport de travaux :
+
+![Mise à Jour Statut](../images/image21.png)
+
+### 4. Importation Massive Excel (urban_issues.xlsx)
+SheetJS extrait les signalements et les enregistre simultanément en une seule transaction Batch :
+
+![Importation Excel](../images/image22.png)
+
+### 5. Traçabilité & Journal d'Audit Public (Partie 4 du sujet)
+Consultation publique affichant la timeline chronologique certifiée par la blockchain :
+
+![Traçabilité et Historique](../images/image23.png)
